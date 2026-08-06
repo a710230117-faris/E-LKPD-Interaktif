@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-LKPD | Desain Poster Digital dengan AI Generatif</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2436;
+    --border: #2a3050;
+    --accent: #7c6ef5;
+    --accent2: #f5a623;
+    --accent3: #4ecdc4;
+    --text: #e8eaf6;
+    --text-muted: #7b82a8;
+    --text-dim: #4a5278;
+    --red: #ff6b6b;
+    --green: #51cf66;
+    --completed: #23293d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1040 0%, #0f1117 50%, #0d1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(124,110,245,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 860px; margin: 0 auto; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(124,110,245,0.15);
+    border: 1px solid rgba(124,110,245,0.3);
+    color: #a89ef8;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 12px; border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .header h1 span { color: var(--accent); }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 14px;
+    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+  .header-sub span { display: flex; align-items: center; gap: 5px; }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    max-width: 860px; margin: 0 auto;
+    padding: 1rem 2rem 0;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* NAV TABS */
+  .nav-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+  .nav-tabs {
+    max-width: 860px; margin: 0 auto;
+    display: flex; overflow-x: auto;
+    gap: 2px; padding: 0 1rem;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-muted);
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-tab.done { color: var(--green); }
+  .nav-tab.done.active { color: var(--accent); }
+
+  /* MAIN */
+  .main { max-width: 860px; margin: 0 auto; padding: 2rem; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-header {
+    display: flex; align-items: flex-start; gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 2rem; flex-shrink: 0;
+    background: var(--surface2);
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .section-title h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+  .section-title .timer {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--accent2);
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.2);
+    padding: 3px 10px; border-radius: 20px;
+    font-weight: 600;
+  }
+
+  /* IDENTITAS */
+  .id-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media(max-width: 500px) { .id-grid { grid-template-columns: 1fr; } }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  /* CASE STUDY */
+  .case-box {
+    background: linear-gradient(135deg, #1a1f36, #131929);
+    border: 1px solid #2d3a6e;
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .case-box h3 {
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .case-box p { color: #b8c0e0; font-size: 14px; margin-bottom: 0.75rem; }
+  .case-box p:last-child { margin-bottom: 0; }
+  .speech {
+    font-style: italic;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 0.5rem 0;
+    color: #d0d4f0;
+  }
+
+  /* FORM ELEMENTS */
+  .field { margin-bottom: 1.25rem; }
+  .field label {
+    display: block;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .field input[type="text"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .field input[type="text"]:focus,
+  .field textarea:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,110,245,0.1);
+  }
+  .field textarea { min-height: 80px; }
+
+  /* THEME SELECTOR */
+  .theme-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .theme-btn {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px; font-weight: 600;
+  }
+  .theme-btn .emoji { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+  .theme-btn:hover { border-color: var(--accent); background: var(--surface); }
+  .theme-btn.selected { border-color: var(--accent); background: rgba(124,110,245,0.1); }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(42,48,80,0.5);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td input[type="text"], td textarea, td select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 0;
+    resize: none;
+  }
+  td input[type="text"]:focus, td textarea:focus, td select:focus {
+    outline: none;
+    background: rgba(124,110,245,0.05);
+    border-radius: 4px;
+    padding: 4px 6px;
+  }
+
+  /* CHECKBOX */
+  .check-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42,48,80,0.4);
+    cursor: pointer;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer; flex-shrink: 0;
+  }
+  .check-row label { cursor: pointer; font-size: 13px; color: var(--text-muted); flex: 1; }
+  .check-row input[type="checkbox"]:checked + label { color: var(--text); }
+
+  /* PROMPT BOX */
+  .prompt-box {
+    background: #0a0d15;
+    border: 1px solid #2a3050;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .prompt-box-header {
+    background: var(--surface);
+    padding: 8px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .prompt-section {
+    padding: 14px;
+    border-bottom: 1px solid rgba(42,48,80,0.5);
+  }
+  .prompt-section:last-child { border-bottom: none; }
+  .prompt-section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--accent2);
+    margin-bottom: 6px;
+  }
+  .prompt-section textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    resize: none;
+    min-height: 60px;
+    line-height: 1.6;
+  }
+  .prompt-section textarea:focus { outline: none; }
+
+  /* MIND MAP INTERACTIVE */
+  .mind-map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  @media(max-width: 540px) { .mind-map-grid { grid-template-columns: 1fr; } }
+  .mind-node {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .mind-node .node-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--accent3);
+    margin-bottom: 8px;
+  }
+  .mind-node.center-node {
+    border-color: var(--accent);
+    background: rgba(124,110,245,0.06);
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .mind-node.center-node .node-title { color: var(--accent); }
+  .mind-node textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    resize: none;
+    text-align: center;
+    min-height: 50px;
+  }
+  .mind-node textarea:focus { outline: none; }
+  @media(max-width: 540px) { .mind-node.center-node { grid-column: 1; grid-row: 1; } }
+
+  /* SKETCH AREA */
+  .sketch-area {
+    background: var(--bg);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    min-height: 260px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .sketch-area:hover { border-color: var(--accent); }
+  .sketch-area .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .sketch-area p { font-size: 13px; color: var(--text-muted); }
+  .sketch-canvas { display: none; }
+  .sketch-area.has-image img {
+    max-width: 100%; max-height: 250px; border-radius: 8px;
+  }
+
+  /* RATING STARS */
+  .rating-group { display: flex; gap: 4px; }
+  .rating-group input[type="radio"] { display: none; }
+  .rating-group label {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;
+    color: var(--text-muted); transition: all 0.2s;
+  }
+  .rating-group input[type="radio"]:checked + label,
+  .rating-group label:hover {
+    background: rgba(124,110,245,0.2); border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* REFLECTION */
+  .reflection-box {
+    background: linear-gradient(135deg, #0d1a2e, #151d3a);
+    border: 1px solid #1e3060;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .reflection-box .quote-mark {
+    font-size: 3rem; color: var(--accent); opacity: 0.3;
+    line-height: 1; margin-bottom: -10px; display: block;
+    font-family: Georgia, serif;
+  }
+  .reflection-box textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-style: italic;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.7;
+  }
+  .reflection-box textarea:focus { outline: none; }
+
+  /* TIMELINE NARASI */
+  .narasi-item {
+    display: flex; gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .narasi-time {
+    flex-shrink: 0; width: 80px; height: 28px;
+    background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--accent2); font-weight: 700;
+  }
+  .narasi-content { flex: 1; }
+  .narasi-content label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+
+  /* SELF ASSESSMENT TABLE */
+  .sa-table td:last-child { width: 160px; }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex; gap: 10px; justify-content: space-between;
+    margin-top: 2rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 10px; border: none;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #6b5ee3; transform: translateY(-1px); }
+  .btn-success {
+    background: rgba(81,207,102,0.15);
+    border: 1px solid rgba(81,207,102,0.3);
+    color: var(--green);
+  }
+  .btn-success:hover { background: rgba(81,207,102,0.25); }
+
+  /* SAVE INDICATOR */
+  .save-dot {
+    display: inline-block; width: 8px; height: 8px;
+    background: var(--green); border-radius: 50%;
+    margin-right: 6px; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* UPLOAD AREA */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg);
+  }
+  .upload-zone:hover { border-color: var(--accent3); background: rgba(78,205,196,0.03); }
+  .upload-zone .icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+  .upload-zone p { font-size: 13px; color: var(--text-muted); }
+  .upload-zone input { display: none; }
+
+  /* COMPLETION BADGE */
+  .completion-banner {
+    background: linear-gradient(135deg, rgba(81,207,102,0.1), rgba(78,205,196,0.1));
+    border: 1px solid rgba(81,207,102,0.3);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 1rem;
+    display: none;
+  }
+  .completion-banner.show { display: block; }
+  .completion-banner h3 { color: var(--green); font-size: 1.1rem; margin-bottom: 0.25rem; }
+  .completion-banner p { font-size: 13px; color: var(--text-muted); }
+
+  /* PRINT */
+  @media print {
+    .nav-wrap, .btn-row, .progress-bar-wrap, .btn { display: none; }
+    .section { display: block !important; }
+    body { background: white; color: black; }
+  }
+
+  /* TOOLTIP */
+  .tip {
+    font-size: 12px; color: var(--text-dim);
+    font-style: italic; margin-top: 4px;
+  }
+
+  /* SCORE DISPLAY */
+  .score-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 2.5rem; font-weight: 700;
+    color: var(--accent);
+    text-align: center; margin: 1rem 0;
+  }
+  .score-display span { font-size: 1rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">🤖 E-LKPD Interaktif</div>
+    <h1>Desain Poster Digital<br><span>dengan AI Generatif</span></h1>
+    <div class="header-sub">
+      <span>📚 Project Based Learning</span>
+      <span>🎨 Kelas X DKV</span>
+      <span>⏱ ±90 Menit</span>
+      <span><span class="save-dot"></span>Tersimpan otomatis</span>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-label">
+    <span>Progress Pengerjaan</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo(0)">📋 Identitas</button>
+    <button class="nav-tab" onclick="goTo(1)">A · Studi Kasus</button>
+    <button class="nav-tab" onclick="goTo(2)">B · Brainstorming</button>
+    <button class="nav-tab" onclick="goTo(3)">C · Prompt & AI</button>
+    <button class="nav-tab" onclick="goTo(4)">D · Sketsa</button>
+    <button class="nav-tab" onclick="goTo(5)">E · Desain Canva</button>
+    <button class="nav-tab" onclick="goTo(6)">F · Presentasi</button>
+    <button class="nav-tab" onclick="goTo(7)">G · Refleksi</button>
+    <button class="nav-tab" onclick="goTo(8)">H · Lampiran</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SECTION 0: IDENTITAS -->
+  <div class="section active" id="sec0">
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <div class="section-title">
+        <h2>Identitas Peserta Didik</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Lengkapi data dirimu sebelum memulai</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="id-grid">
+        <div class="field">
+          <label>Nama Siswa</label>
+          <input type="text" id="id_nama" placeholder="Nama lengkap..." oninput="save()">
+        </div>
+        <div class="field">
+          <label>Kelas</label>
+          <input type="text" id="id_kelas" placeholder="X DKV – ..." oninput="save()">
+        </div>
+        <div class="field">
+          <label>No. Absen</label>
+          <input type="text" id="id_absen" placeholder="..." oninput="save()">
+        </div>
+        <div class="field">
+          <label>Hari, Tanggal</label>
+          <input type="text" id="id_tanggal" placeholder="Senin, ..." oninput="save()">
+        </div>
+        <div class="field" style="grid-column: span 2">
+          <label>Nama Guru</label>
+          <input type="text" id="id_guru" placeholder="..." oninput="save()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">🎯 Tujuan Pembelajaran</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Setelah menyelesaikan E-LKPD ini, kamu mampu:</p>
+      <div class="check-row"><input type="checkbox" id="tp1" onchange="save()"><label for="tp1">Menjelaskan fungsi AI generatif sebagai <em>creative assistant</em> dalam desain</label></div>
+      <div class="check-row"><input type="checkbox" id="tp2" onchange="save()"><label for="tp2">Menyusun prompt yang efektif untuk menghasilkan ide desain poster</label></div>
+      <div class="check-row"><input type="checkbox" id="tp3" onchange="save()"><label for="tp3">Mengevaluasi output AI secara kritis</label></div>
+      <div class="check-row"><input type="checkbox" id="tp4" onchange="save()"><label for="tp4">Membuat poster digital menggunakan Canva di smartphone</label></div>
+      <div class="check-row"><input type="checkbox" id="tp5" onchange="save()"><label for="tp5">Mempresentasikan proses kreatif dan hasil karya secara reflektif</label></div>
+    </div>
+
+    <div class="card" style="background: rgba(124,110,245,0.05); border-color: rgba(124,110,245,0.2);">
+      <div class="card-label">📌 Petunjuk Pengerjaan</div>
+      <ul style="font-size:13px;color:var(--text-muted);padding-left:1.2rem;line-height:2;">
+        <li>Kerjakan sesuai urutan — setiap bagian membangun bagian berikutnya</li>
+        <li>Jujurlah dalam mengisi — ini bukan ujian, tapi rekam proses kreatifmu</li>
+        <li>Gunakan ChatGPT/Gemini sebagai alat bantu, bukan penulis E-LKPD ini</li>
+        <li>Data tersimpan otomatis di browser ini</li>
+      </ul>
+    </div>
+    <div class="btn-row">
+      <div></div>
+      <button class="btn btn-primary" onclick="goTo(1)">Mulai Bagian A →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 1: STUDI KASUS -->
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <div class="section-icon">📖</div>
+      <div class="section-title">
+        <h2>Bagian A · Studi Kasus</h2>
+        <div class="timer">⏱ Estimasi: 10 Menit</div>
+      </div>
+    </div>
+
+    <div class="case-box">
+      <h3>🏢 Studi Kasus: Studio Kreatif "DesignIn"</h3>
+      <p>Nadia (18 tahun) adalah desainer magang di studio kreatif kecil. Suatu hari, kliennya meminta poster kampanye lingkungan yang harus jadi dalam 2 hari. Nadia panik — ide belum ada, waktu mepet.</p>
+      <p>Temannya menyarankan: <span class="speech">"Pakai AI dong, langsung jadi!"</span></p>
+      <p>Nadia mencoba. Dia mengetik: <span class="speech"><em>"buatin poster kampanye lingkungan"</em></span> ke ChatGPT.</p>
+      <p>AI memberikan deskripsi poster yang sangat generik: <em>"Poster dengan gambar bumi hijau, teks 'Jaga Bumi Kita', warna hijau dan biru."</em></p>
+      <p>Nadia langsung mendesain di Canva persis seperti deskripsi AI tersebut.</p>
+      <p>Hasilnya: Poster yang terkesan klise, tidak berbeda dari ratusan poster lingkungan lainnya.</p>
+      <p>Klien kecewa: <span class="speech">"Kurang berkarakter. Tidak ada yang membedakan poster ini."</span></p>
+      <p><strong style="color:var(--accent3);">Nadia belajar sesuatu penting hari itu.</strong></p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">A1 · Identifikasi Masalah</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Apa kesalahan utama yang dilakukan Nadia dalam menggunakan AI? Sebutkan minimal 2 kesalahan:</p>
+      <div class="field">
+        <label>Kesalahan 1</label>
+        <textarea id="a1_1" placeholder="Tuliskan kesalahan pertama Nadia..." oninput="save()"></textarea>
+      </div>
+      <div class="field">
+        <label>Kesalahan 2</label>
+        <textarea id="a1_2" placeholder="Tuliskan kesalahan kedua Nadia..." oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">A2 · Analisis</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Mengapa poster Nadia terasa "klise" dan "tidak berkarakter"? Hubungkan dengan konsep <em>creative assistant</em>:</p>
+      <div class="field">
+        <textarea id="a2" placeholder="Tuliskan analisamu..." rows="4" oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">A3 · Solusi</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Jika kamu adalah Nadia, apa yang akan kamu lakukan secara berbeda?</p>
+      <div class="field">
+        <label>Langkah 1</label>
+        <input type="text" id="a3_1" placeholder="..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Langkah 2</label>
+        <input type="text" id="a3_2" placeholder="..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Langkah 3</label>
+        <input type="text" id="a3_3" placeholder="..." oninput="save()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">A4 · Refleksi Awal & Komitmen</div>
+      <div class="reflection-box">
+        <span class="quote-mark">"</span>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Dalam membuat poster hari ini, saya berkomitmen untuk menggunakan AI sebagai alat bantu bukan pengganti kreativitas dengan cara...</p>
+        <textarea id="a4" placeholder="Tulis komitmenmu di sini..." oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(0)">← Kembali</button>
+      <button class="btn btn-primary" onclick="goTo(2)">Bagian B →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: BRAINSTORMING -->
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <div class="section-title">
+        <h2>Bagian B · Brainstorming Awal</h2>
+        <div class="timer">⏱ Estimasi: 10 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">B1 · Pilih Tema Postermu</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Pilih tema yang paling ingin kamu garap:</p>
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-btn" onclick="selectTheme(this,'Lingkungan Hidup')"><span class="emoji">🌿</span>Lingkungan Hidup</button>
+        <button class="theme-btn" onclick="selectTheme(this,'Kesehatan Remaja')"><span class="emoji">❤️</span>Kesehatan Remaja</button>
+        <button class="theme-btn" onclick="selectTheme(this,'Budaya Lokal')"><span class="emoji">🏯</span>Budaya Lokal</button>
+        <button class="theme-btn" onclick="selectTheme(this,'Keselamatan')"><span class="emoji">🚦</span>Keselamatan</button>
+        <button class="theme-btn" onclick="selectTheme(this,'Pendidikan & Literasi')"><span class="emoji">📚</span>Pendidikan & Literasi</button>
+      </div>
+      <div class="field" style="margin-top:1rem;">
+        <label>Alasan memilih tema ini</label>
+        <textarea id="b1_alasan" placeholder="Kenapa tema ini menarik bagimu?..." oninput="save()"></textarea>
+      </div>
+      <div class="field">
+        <label>Sub-topik spesifik yang kupilih</label>
+        <input type="text" id="b1_subtopik" placeholder="Contoh: 'Bahaya Sampah Plastik di Lautan'" oninput="save()">
+        <p class="tip">💡 Pilih 1 sub-topik yang lebih spesifik dari tema di atas</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">B2 · Peta Pikiran — Tanpa AI Dulu!</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Tuliskan semua ide yang ada di kepalamu sendiri sebelum bertanya kepada AI:</p>
+      <div class="mind-map-grid">
+        <div class="mind-node">
+          <div class="node-title">💬 Pesan Utama</div>
+          <textarea id="mm_pesan" placeholder="Apa yang ingin kamu sampaikan?" oninput="save()"></textarea>
+        </div>
+        <div class="mind-node center-node">
+          <div class="node-title">🎯 Tema / Sub-topik</div>
+          <textarea id="mm_tema" placeholder="Sub-topikmu..." oninput="sync_tema()"></textarea>
+        </div>
+        <div class="mind-node">
+          <div class="node-title">👥 Target Audiens</div>
+          <textarea id="mm_audiens" placeholder="Siapa yang akan melihat?" oninput="save()"></textarea>
+        </div>
+        <div class="mind-node">
+          <div class="node-title">🖼 Visual Terbayang</div>
+          <textarea id="mm_visual" placeholder="Gambar, foto, ilustrasi apa?" oninput="save()"></textarea>
+        </div>
+        <div class="mind-node">
+          <div class="node-title">🔑 Kata Kunci</div>
+          <textarea id="mm_katakunci" placeholder="Kata-kata penting..." oninput="save()"></textarea>
+        </div>
+        <div class="mind-node">
+          <div class="node-title">🎨 Warna & Gaya</div>
+          <textarea id="mm_warna" placeholder="Warna dan gaya desain..." oninput="save()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">B3 · Definisikan Visimu</div>
+      <div class="field">
+        <label>Pesan utama poster saya</label>
+        <input type="text" id="b3_pesan" placeholder="Maks. 10 kata — apa yang ingin disampaikan?" oninput="save()">
+      </div>
+      <div class="field">
+        <label>Audiens target saya</label>
+        <input type="text" id="b3_audiens" placeholder="Siapa? Usia, profil, karakteristik..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Mood / Suasana yang ingin saya ciptakan</label>
+        <input type="text" id="b3_mood" placeholder="Ceria? Serius? Urgent? Inspiratif? Hopeful?" oninput="save()">
+      </div>
+      <div class="field">
+        <label>Aksi yang saya harapkan dari audiens</label>
+        <input type="text" id="b3_aksi" placeholder="Setelah melihat poster, apa yang kamu mau audiens lakukan/rasakan?" oninput="save()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(1)">← Bagian A</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Bagian C →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PROMPT & AI -->
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <div class="section-icon">🤖</div>
+      <div class="section-title">
+        <h2>Bagian C · Eksplorasi Prompt & AI</h2>
+        <div class="timer">⏱ Estimasi: 20 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">C1 · Rancang Prompt Pertamamu</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Gunakan anatomi prompt: <strong>Konteks + Perintah + Spesifikasi + Batasan</strong></p>
+      <div class="prompt-box">
+        <div class="prompt-box-header">
+          <span>📝 Prompt Builder</span>
+          <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="copyPrompt()">📋 Salin Prompt</button>
+        </div>
+        <div class="prompt-section">
+          <div class="prompt-section-label">[KONTEKS]</div>
+          <textarea id="p1_konteks" placeholder="Saya adalah siswa SMK DKV kelas X yang sedang membuat poster digital bertema: ..." oninput="save()"></textarea>
+        </div>
+        <div class="prompt-section">
+          <div class="prompt-section-label">[PERINTAH] — Bantu saya dengan:</div>
+          <textarea id="p1_perintah" placeholder="1. ...&#10;2. ...&#10;3. ..." oninput="save()"></textarea>
+        </div>
+        <div class="prompt-section">
+          <div class="prompt-section-label">[SPESIFIKASI]</div>
+          <textarea id="p1_spesifikasi" placeholder="- Format: poster digital untuk media sosial&#10;- Audiens: ...&#10;- Mood: ...&#10;- Gaya: ..." oninput="save()"></textarea>
+        </div>
+        <div class="prompt-section">
+          <div class="prompt-section-label">[BATASAN]</div>
+          <textarea id="p1_batasan" placeholder="- Jangan gunakan: ...&#10;- Hindari klise seperti: ...&#10;- Catatan khusus: ..." oninput="save()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">C2 · Hasil Output AI (Prompt Pertama)</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Rangkum respons AI di sini:</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Elemen</th><th>Output AI</th></tr>
+          <tr><td>Ide Headline</td><td><textarea id="c2_headline" oninput="save()"></textarea></td></tr>
+          <tr><td>Saran Visual</td><td><textarea id="c2_visual" oninput="save()"></textarea></td></tr>
+          <tr><td>Rekomendasi Warna</td><td><textarea id="c2_warna" oninput="save()"></textarea></td></tr>
+          <tr><td>Saran Tipografi</td><td><textarea id="c2_tipografi" oninput="save()"></textarea></td></tr>
+          <tr><td>Ide Layout</td><td><textarea id="c2_layout" oninput="save()"></textarea></td></tr>
+          <tr><td>Copywriting / Teks</td><td><textarea id="c2_copy" oninput="save()"></textarea></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">C3 · Evaluasi Output AI — Berpikir Kritis!</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Output AI</th><th>Relevan?</th><th>Konteks Lokal?</th><th>Akan Digunakan?</th><th>Alasan</th></tr>
+          <tr>
+            <td>Headline</td>
+            <td><select id="c3_rel1" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_lok1" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_gun1" onchange="save()"><option value="">–</option><option>Ya</option><option>Modifikasi</option><option>Tidak</option></select></td>
+            <td><input type="text" id="c3_al1" oninput="save()"></td>
+          </tr>
+          <tr>
+            <td>Visual</td>
+            <td><select id="c3_rel2" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_lok2" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_gun2" onchange="save()"><option value="">–</option><option>Ya</option><option>Modifikasi</option><option>Tidak</option></select></td>
+            <td><input type="text" id="c3_al2" oninput="save()"></td>
+          </tr>
+          <tr>
+            <td>Palet Warna</td>
+            <td><select id="c3_rel3" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_lok3" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_gun3" onchange="save()"><option value="">–</option><option>Ya</option><option>Modifikasi</option><option>Tidak</option></select></td>
+            <td><input type="text" id="c3_al3" oninput="save()"></td>
+          </tr>
+          <tr>
+            <td>Tipografi</td>
+            <td><select id="c3_rel4" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_lok4" onchange="save()"><option value="">–</option><option>Ya</option><option>Tidak</option></select></td>
+            <td><select id="c3_gun4" onchange="save()"><option value="">–</option><option>Ya</option><option>Modifikasi</option><option>Tidak</option></select></td>
+            <td><input type="text" id="c3_al4" oninput="save()"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="field" style="margin-top:1rem;">
+        <label>Hal yang TIDAK akan saya ambil dari output AI ini dan alasannya:</label>
+        <textarea id="c3_tidak" oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">C4 · Iterasi Prompt (Prompt Kedua)</div>
+      <div class="reflection-box">
+        <span class="quote-mark">"</span>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Terima kasih atas ide sebelumnya. Saya ingin mengembangkan lebih lanjut...</p>
+        <div class="field"><label>Bagian yang mau dikembangkan</label><input type="text" id="c4_kembang" oninput="save()"></div>
+        <div class="field"><label>Spesifikasi tambahan</label><input type="text" id="c4_spek" oninput="save()"></div>
+        <div class="field"><label>Pertanyaan tambahan</label><input type="text" id="c4_tanya" oninput="save()"></div>
+      </div>
+      <div class="field">
+        <label>Output AI dari Prompt Kedua</label>
+        <textarea id="c4_output" rows="4" oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="card" style="border-style:dashed;">
+      <div class="card-label">C5 · Prompt Ketiga (Opsional / Pengayaan)</div>
+      <div class="field">
+        <label>Fokus prompt ketiga</label>
+        <input type="text" id="c5_fokus" oninput="save()">
+      </div>
+      <div class="field">
+        <label>Output singkat</label>
+        <textarea id="c5_output" oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">C6 · Keputusan Final Sebelum Mendesain</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Elemen Desain</th><th>Keputusanku</th><th>Alasan (AI atau Pikiranku?)</th></tr>
+          <tr><td>Headline poster</td><td><input type="text" id="c6_1a" oninput="save()"></td><td><input type="text" id="c6_1b" oninput="save()"></td></tr>
+          <tr><td>Visual utama</td><td><input type="text" id="c6_2a" oninput="save()"></td><td><input type="text" id="c6_2b" oninput="save()"></td></tr>
+          <tr><td>Warna 1 (dominan)</td><td><input type="text" id="c6_3a" oninput="save()"></td><td><input type="text" id="c6_3b" oninput="save()"></td></tr>
+          <tr><td>Warna 2 (pendukung)</td><td><input type="text" id="c6_4a" oninput="save()"></td><td><input type="text" id="c6_4b" oninput="save()"></td></tr>
+          <tr><td>Warna 3 (aksen)</td><td><input type="text" id="c6_5a" oninput="save()"></td><td><input type="text" id="c6_5b" oninput="save()"></td></tr>
+          <tr><td>Font Heading</td><td><input type="text" id="c6_6a" oninput="save()"></td><td><input type="text" id="c6_6b" oninput="save()"></td></tr>
+          <tr><td>Font Body</td><td><input type="text" id="c6_7a" oninput="save()"></td><td><input type="text" id="c6_7b" oninput="save()"></td></tr>
+          <tr><td>Layout/Komposisi</td><td><input type="text" id="c6_8a" oninput="save()"></td><td><input type="text" id="c6_8b" oninput="save()"></td></tr>
+          <tr><td>Elemen grafis tambahan</td><td><input type="text" id="c6_9a" oninput="save()"></td><td><input type="text" id="c6_9b" oninput="save()"></td></tr>
+          <tr><td>Call-to-action</td><td><input type="text" id="c6_10a" oninput="save()"></td><td><input type="text" id="c6_10b" oninput="save()"></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(2)">← Bagian B</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Bagian D →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: SKETSA -->
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <div class="section-icon">✏️</div>
+      <div class="section-title">
+        <h2>Bagian D · Sketsa Konsep</h2>
+        <div class="timer">⏱ Estimasi: 5 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">D1 · Sketsa Kasar Layout</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Upload foto sketsa kasar layout postermu (tidak perlu indah!)</p>
+      <label class="upload-zone" id="sketchZone" onclick="document.getElementById('sketchFile').click()">
+        <span class="icon">✏️</span>
+        <p><strong>Klik untuk upload foto sketsa</strong></p>
+        <p>atau gambar di kertas lalu foto</p>
+        <input type="file" id="sketchFile" accept="image/*" onchange="handleSketch(event)">
+      </label>
+      <div id="sketchPreview" style="display:none;margin-top:1rem;text-align:center;">
+        <img id="sketchImg" style="max-width:100%;border-radius:12px;border:1px solid var(--border);">
+        <button onclick="clearSketch()" class="btn btn-outline" style="margin-top:8px;">✕ Hapus Sketsa</button>
+      </div>
+      <p class="tip" style="margin-top:0.75rem;">💡 Format: Poster A4 Portrait / Instagram Story (9:16)</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">D1 · Keterangan Sketsa</div>
+      <div class="field">
+        <label>Area Headline</label>
+        <input type="text" id="d1_headline" placeholder="..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Area Visual Utama</label>
+        <input type="text" id="d1_visual" placeholder="..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Area Body Text</label>
+        <input type="text" id="d1_body" placeholder="..." oninput="save()">
+      </div>
+      <div class="field">
+        <label>Area CTA / Hashtag</label>
+        <input type="text" id="d1_cta" placeholder="..." oninput="save()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(3)">← Bagian C</button>
+      <button class="btn btn-primary" onclick="goTo(5)">Bagian E →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: DESAIN CANVA -->
+  <div class="section" id="sec5">
+    <div class="section-header">
+      <div class="section-icon">🎨</div>
+      <div class="section-title">
+        <h2>Bagian E · Desain Poster di Canva</h2>
+        <div class="timer">⏱ Estimasi: 30 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">E1 · Persiapan & Checklist Canva</div>
+      <div class="check-row"><input type="checkbox" id="e1_1" onchange="save()"><label for="e1_1">Membuka Canva dan login</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_2" onchange="save()"><label for="e1_2">Membuat kanvas baru (Poster / Custom Size)</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_3" onchange="save()"><label for="e1_3">Menetapkan background sesuai rencana</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_4" onchange="save()"><label for="e1_4">Menambahkan visual utama</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_5" onchange="save()"><label for="e1_5">Mengetik headline dengan font yang dipilih</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_6" onchange="save()"><label for="e1_6">Menambahkan body text (jika ada)</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_7" onchange="save()"><label for="e1_7">Menyesuaikan palet warna seluruh elemen</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_8" onchange="save()"><label for="e1_8">Menambahkan elemen grafis tambahan</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_9" onchange="save()"><label for="e1_9">Review keseluruhan desain</label></div>
+      <div class="check-row"><input type="checkbox" id="e1_10" onchange="save()"><label for="e1_10">Ekspor / download poster</label></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">E2 · Jurnal Proses Desain</div>
+      <div class="field"><label>1. Hal pertama yang kukerjakan</label><textarea id="e2_1" oninput="save()"></textarea></div>
+      <div class="field"><label>2. Tantangan yang kutemui</label><textarea id="e2_2" oninput="save()"></textarea></div>
+      <div class="field"><label>3. Cara mengatasi tantangan</label><textarea id="e2_3" oninput="save()"></textarea></div>
+      <div class="field"><label>4. Perubahan dari rencana awal (jika ada)</label><textarea id="e2_4" oninput="save()"></textarea></div>
+      <div class="field"><label>5. Momen yang paling menyenangkan</label><textarea id="e2_5" oninput="save()"></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">E3 · Checklist Kualitas Poster</div>
+      <p class="tip" style="margin-bottom:1rem;">Skala kualitas: 1 = Kurang, 2 = Cukup, 3 = Baik, 4 = Sangat Baik</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Elemen</th><th>Ada?</th><th>Kualitas (1–4)</th><th>Catatan Perbaikan</th></tr>
+          <tr><td>Headline yang kuat & terbaca</td><td><input type="checkbox" id="e3c1" onchange="calcScore();save()"></td><td><select id="e3s1" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n1" oninput="save()"></td></tr>
+          <tr><td>Visual utama yang relevan</td><td><input type="checkbox" id="e3c2" onchange="calcScore();save()"></td><td><select id="e3s2" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n2" oninput="save()"></td></tr>
+          <tr><td>Hierarki visual jelas</td><td><input type="checkbox" id="e3c3" onchange="calcScore();save()"></td><td><select id="e3s3" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n3" oninput="save()"></td></tr>
+          <tr><td>Palet warna konsisten (max 3)</td><td><input type="checkbox" id="e3c4" onchange="calcScore();save()"></td><td><select id="e3s4" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n4" oninput="save()"></td></tr>
+          <tr><td>Tipografi max 2 font</td><td><input type="checkbox" id="e3c5" onchange="calcScore();save()"></td><td><select id="e3s5" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n5" oninput="save()"></td></tr>
+          <tr><td>White space yang cukup</td><td><input type="checkbox" id="e3c6" onchange="calcScore();save()"></td><td><select id="e3s6" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n6" oninput="save()"></td></tr>
+          <tr><td>Pesan tersampaikan dalam 3 detik</td><td><input type="checkbox" id="e3c7" onchange="calcScore();save()"></td><td><select id="e3s7" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n7" oninput="save()"></td></tr>
+          <tr><td>Ada nama/watermark desainer</td><td><input type="checkbox" id="e3c8" onchange="calcScore();save()"></td><td><select id="e3s8" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n8" oninput="save()"></td></tr>
+          <tr><td>Tidak ada typo/kesalahan teks</td><td><input type="checkbox" id="e3c9" onchange="calcScore();save()"></td><td><select id="e3s9" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n9" oninput="save()"></td></tr>
+          <tr><td>Resolusi / kualitas visual baik</td><td><input type="checkbox" id="e3c10" onchange="calcScore();save()"></td><td><select id="e3s10" onchange="calcScore();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td><td><input type="text" id="e3n10" oninput="save()"></td></tr>
+        </table>
+      </div>
+      <div class="score-display" id="scoreDisplay">– <span>/ 40</span></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(4)">← Bagian D</button>
+      <button class="btn btn-primary" onclick="goTo(6)">Bagian F →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: PRESENTASI -->
+  <div class="section" id="sec6">
+    <div class="section-header">
+      <div class="section-icon">🎤</div>
+      <div class="section-title">
+        <h2>Bagian F · Persiapan Presentasi</h2>
+        <div class="timer">⏱ Estimasi: 5 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">F1 · Narasi Presentasi (1 Menit)</div>
+      <div class="narasi-item">
+        <div class="narasi-time">0–15 dtk</div>
+        <div class="narasi-content">
+          <label>Tema & Pesan</label>
+          <textarea id="f1_1" placeholder='"Poster saya bertema _____ dengan pesan utama: ___"' oninput="save()"></textarea>
+        </div>
+      </div>
+      <div class="narasi-item">
+        <div class="narasi-time">15–35 dtk</div>
+        <div class="narasi-content">
+          <label>Penggunaan AI</label>
+          <textarea id="f1_2" placeholder='"Saya menggunakan ChatGPT untuk _____. Output yang paling berguna adalah _____. Yang tidak saya gunakan adalah _____ karena _____."' rows="3" oninput="save()"></textarea>
+        </div>
+      </div>
+      <div class="narasi-item">
+        <div class="narasi-time">35–50 dtk</div>
+        <div class="narasi-content">
+          <label>Keputusan Desain Personal</label>
+          <textarea id="f1_3" placeholder='"Saya memilih warna _____ karena _____. Font _____ dipilih karena _____. Bagian yang paling saya banggakan adalah _____."' rows="3" oninput="save()"></textarea>
+        </div>
+      </div>
+      <div class="narasi-item">
+        <div class="narasi-time">50–60 dtk</div>
+        <div class="narasi-content">
+          <label>Refleksi</label>
+          <textarea id="f1_4" placeholder='"Hal paling berharga yang saya pelajari hari ini adalah _____."' oninput="save()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">F2 · Antisipasi Pertanyaan</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Kemungkinan Pertanyaan</th><th>Jawabanku</th></tr>
+          <tr><td>"Kenapa pilih warna ini?"</td><td><textarea id="f2_1" oninput="save()"></textarea></td></tr>
+          <tr><td>"Bagian mana yang murni idemu, bukan AI?"</td><td><textarea id="f2_2" oninput="save()"></textarea></td></tr>
+          <tr><td>"Kalau ada waktu lebih, apa yang akan diperbaiki?"</td><td><textarea id="f2_3" oninput="save()"></textarea></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(5)">← Bagian E</button>
+      <button class="btn btn-primary" onclick="goTo(7)">Bagian G →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: REFLEKSI -->
+  <div class="section" id="sec7">
+    <div class="section-header">
+      <div class="section-icon">🪞</div>
+      <div class="section-title">
+        <h2>Bagian G · Refleksi Akhir</h2>
+        <div class="timer">⏱ Estimasi: 10 Menit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">G1 · Refleksi Proses Belajar</div>
+      <div class="field"><label>1. Apa hal paling bermakna yang kamu pelajari hari ini?</label><textarea id="g1_1" rows="3" oninput="save()"></textarea></div>
+      <div class="field"><label>2. Bagian mana yang paling menantang? Bagaimana kamu mengatasinya?</label><textarea id="g1_2" rows="3" oninput="save()"></textarea></div>
+      <div class="field"><label>3. Bagaimana AI membantu prosesmu? Di bagian mana paling terasa manfaatnya?</label><textarea id="g1_3" rows="3" oninput="save()"></textarea></div>
+      <div class="field"><label>4. Adakah saat di mana AI justru membingungkan atau tidak membantu? Ceritakan!</label><textarea id="g1_4" rows="3" oninput="save()"></textarea></div>
+      <div class="field"><label>5. Apakah poster yang kamu buat mencerminkan kreativitasmu sendiri? Jelaskan!</label><textarea id="g1_5" rows="3" oninput="save()"></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">G2 · Penilaian Diri (Self-Assessment)</div>
+      <p class="tip" style="margin-bottom:1rem;">Skala: 1 = Belum memahami, 2 = Cukup, 3 = Memahami, 4 = Sangat memahami</p>
+      <div class="tbl-wrap sa-table">
+        <table>
+          <tr><th>Aspek</th><th>Nilai (1–4)</th><th>Keterangan</th></tr>
+          <tr><td>Pemahaman tentang AI Generatif</td>
+            <td><select id="g2_1" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_1n" oninput="save()"></td></tr>
+          <tr><td>Kemampuan membuat prompt efektif</td>
+            <td><select id="g2_2" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_2n" oninput="save()"></td></tr>
+          <tr><td>Evaluasi kritis terhadap output AI</td>
+            <td><select id="g2_3" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_3n" oninput="save()"></td></tr>
+          <tr><td>Kualitas desain poster</td>
+            <td><select id="g2_4" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_4n" oninput="save()"></td></tr>
+          <tr><td>Kemandirian dalam berkarya</td>
+            <td><select id="g2_5" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_5n" oninput="save()"></td></tr>
+          <tr><td>Etika penggunaan AI</td>
+            <td><select id="g2_6" onchange="calcSA();save()"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+            <td><input type="text" id="g2_6n" oninput="save()"></td></tr>
+          <tr style="background:var(--surface2)"><td><strong>TOTAL</strong></td>
+            <td><strong id="saTotal">– / 24</strong></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">G3 · Kesimpulan</div>
+      <div class="reflection-box">
+        <span class="quote-mark">"</span>
+        <div class="field">
+          <label>Melalui pembelajaran hari ini, saya memahami bahwa AI generatif adalah...</label>
+          <textarea id="g3_1" oninput="save()"></textarea>
+        </div>
+        <div class="field">
+          <label>Cara yang tepat menggunakannya sebagai creative assistant adalah...</label>
+          <textarea id="g3_2" oninput="save()"></textarea>
+        </div>
+        <div class="field">
+          <label>Ke depan, saya berkomitmen untuk menggunakan AI dengan cara... karena...</label>
+          <textarea id="g3_3" oninput="save()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">G4 · Pertanyaan yang Ingin Dieksplorasi Lebih Lanjut</div>
+      <div class="field">
+        <textarea id="g4" rows="3" placeholder="Tulis pertanyaan yang masih ingin kamu eksplorasi tentang AI dan desain..." oninput="save()"></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(6)">← Bagian F</button>
+      <button class="btn btn-primary" onclick="goTo(8)">Bagian H →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: LAMPIRAN -->
+  <div class="section" id="sec8">
+    <div class="section-header">
+      <div class="section-icon">📎</div>
+      <div class="section-title">
+        <h2>Bagian H · Lampiran & Dokumentasi</h2>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">H1 · Poster Final</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Upload hasil poster digitalmu yang sudah selesai (JPG, PNG, atau PDF)</p>
+      <label class="upload-zone" id="posterZone" onclick="document.getElementById('posterFile').click()">
+        <span class="icon">🖼</span>
+        <p><strong>Klik untuk upload poster final</strong></p>
+        <p>JPG, PNG, atau PDF</p>
+        <input type="file" id="posterFile" accept="image/*,.pdf" onchange="handlePoster(event)">
+      </label>
+      <div id="posterPreview" style="display:none;margin-top:1rem;text-align:center;">
+        <img id="posterImg" style="max-width:100%;max-height:400px;border-radius:12px;border:1px solid var(--border);">
+        <button onclick="clearPoster()" class="btn btn-outline" style="margin-top:8px;">✕ Hapus Poster</button>
+      </div>
+      <div class="field" style="margin-top:1rem;">
+        <label>atau tulis Link Poster (Google Drive / Canva)</label>
+        <input type="text" id="h1_link" placeholder="https://..." oninput="save()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">H2 · Screenshot Percakapan dengan AI</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Pilih screenshot percakapan AI yang paling representatif dari prosesmu</p>
+      <label class="upload-zone" id="aiZone" onclick="document.getElementById('aiFile').click()">
+        <span class="icon">💬</span>
+        <p><strong>Klik untuk upload screenshot chat AI</strong></p>
+        <p>atau screenshot lalu pilih dari galeri</p>
+        <input type="file" id="aiFile" accept="image/*" onchange="handleAI(event)">
+      </label>
+      <div id="aiPreview" style="display:none;margin-top:1rem;text-align:center;">
+        <img id="aiImg" style="max-width:100%;border-radius:12px;border:1px solid var(--border);">
+        <button onclick="clearAI()" class="btn btn-outline" style="margin-top:8px;">✕ Hapus Screenshot</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">H3 · Catatan Guru</div>
+      <div class="field">
+        <textarea id="h3_catatan" rows="3" placeholder="(Diisi oleh Guru)" oninput="save()"></textarea>
+      </div>
+      <div id="id-grid" class="id-grid" style="margin-top:1rem;">
+        <div class="field">
+          <label>Nilai LKPD</label>
+          <input type="text" id="h3_nilai" placeholder="... / 100" oninput="save()">
+        </div>
+        <div class="field">
+          <label>Tanggal Penilaian</label>
+          <input type="text" id="h3_tgl" placeholder="..." oninput="save()">
+        </div>
+      </div>
+    </div>
+
+    <div class="completion-banner show">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;">🎉</div>
+      <h3>E-LKPD Selesai Dikerjakan!</h3>
+      <p>Semua bagian telah dilengkapi. Semangat presentasi!</p>
+      <p style="margin-top:0.5rem;font-size:12px;">Data tersimpan di browser ini. Gunakan Ctrl+P untuk mencetak.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goTo(7)">← Bagian G</button>
+      <button class="btn btn-success" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
+    </div>
+    <p style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:1.5rem;">
+      E-LKPD ini merupakan bagian dari penelitian One Group Pretest–Posttest tentang Implementasi Pembelajaran Berbasis AI Generatif.<br>Data digunakan untuk keperluan ilmiah dengan tetap menjaga kerahasiaan identitas peserta didik.
+    </p>
+  </div>
+
+</div>
+
+<script>
+const KEYS = ['id_nama','id_kelas','id_absen','id_tanggal','id_guru',
+  'tp1','tp2','tp3','tp4','tp5',
+  'a1_1','a1_2','a2','a3_1','a3_2','a3_3','a4',
+  'b1_alasan','b1_subtopik','mm_pesan','mm_tema','mm_audiens','mm_visual','mm_katakunci','mm_warna',
+  'b3_pesan','b3_audiens','b3_mood','b3_aksi',
+  'p1_konteks','p1_perintah','p1_spesifikasi','p1_batasan',
+  'c2_headline','c2_visual','c2_warna','c2_tipografi','c2_layout','c2_copy',
+  'c3_rel1','c3_lok1','c3_gun1','c3_al1','c3_rel2','c3_lok2','c3_gun2','c3_al2',
+  'c3_rel3','c3_lok3','c3_gun3','c3_al3','c3_rel4','c3_lok4','c3_gun4','c3_al4','c3_tidak',
+  'c4_kembang','c4_spek','c4_tanya','c4_output','c5_fokus','c5_output',
+  'c6_1a','c6_1b','c6_2a','c6_2b','c6_3a','c6_3b','c6_4a','c6_4b','c6_5a','c6_5b',
+  'c6_6a','c6_6b','c6_7a','c6_7b','c6_8a','c6_8b','c6_9a','c6_9b','c6_10a','c6_10b',
+  'd1_headline','d1_visual','d1_body','d1_cta',
+  'e1_1','e1_2','e1_3','e1_4','e1_5','e1_6','e1_7','e1_8','e1_9','e1_10',
+  'e2_1','e2_2','e2_3','e2_4','e2_5',
+  'e3c1','e3c2','e3c3','e3c4','e3c5','e3c6','e3c7','e3c8','e3c9','e3c10',
+  'e3s1','e3s2','e3s3','e3s4','e3s5','e3s6','e3s7','e3s8','e3s9','e3s10',
+  'e3n1','e3n2','e3n3','e3n4','e3n5','e3n6','e3n7','e3n8','e3n9','e3n10',
+  'f1_1','f1_2','f1_3','f1_4','f2_1','f2_2','f2_3',
+  'g1_1','g1_2','g1_3','g1_4','g1_5',
+  'g2_1','g2_1n','g2_2','g2_2n','g2_3','g2_3n','g2_4','g2_4n','g2_5','g2_5n','g2_6','g2_6n',
+  'g3_1','g3_2','g3_3','g4',
+  'h1_link','h3_catatan','h3_nilai','h3_tgl'];
+
+let selectedTheme = '';
+let currentSection = 0;
+const totalSections = 9;
+
+function save() {
+  const data = {};
+  KEYS.forEach(k => {
+    const el = document.getElementById(k);
+    if (!el) return;
+    if (el.type === 'checkbox') data[k] = el.checked;
+    else data[k] = el.value;
+  });
+  if (selectedTheme) data['_theme'] = selectedTheme;
+  try { localStorage.setItem('elKPD_data', JSON.stringify(data)); } catch(e){}
+  updateProgress();
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('elKPD_data');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    KEYS.forEach(k => {
+      const el = document.getElementById(k);
+      if (!el || data[k] === undefined) return;
+      if (el.type === 'checkbox') el.checked = data[k];
+      else el.value = data[k];
+    });
+    if (data['_theme']) {
+      selectedTheme = data['_theme'];
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        if (b.textContent.trim().includes(selectedTheme)) b.classList.add('selected');
+      });
+    }
+    calcScore(); calcSA(); updateProgress();
+  } catch(e){}
+}
+
+function updateProgress() {
+  let filled = 0, total = 0;
+  KEYS.forEach(k => {
+    const el = document.getElementById(k);
+    if (!el) return;
+    total++;
+    if (el.type === 'checkbox') { if (el.checked) filled++; }
+    else if (el.value && el.value.trim()) filled++;
+  });
+  const pct = total > 0 ? Math.round(filled / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function goTo(n) {
+  document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i === n));
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', i === n));
+  currentSection = n;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function selectTheme(btn, name) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedTheme = name;
+  const mmTheme = document.getElementById('mm_tema');
+  if (mmTheme && !mmTheme.value) mmTheme.value = name;
+  save();
+}
+
+function sync_tema() { save(); }
+
+function calcScore() {
+  let total = 0;
+  for (let i = 1; i <= 10; i++) {
+    const sel = document.getElementById('e3s' + i);
+    if (sel) total += parseInt(sel.value) || 0;
+  }
+  document.getElementById('scoreDisplay').innerHTML = total + ' <span>/ 40</span>';
+}
+
+function calcSA() {
+  let total = 0;
+  for (let i = 1; i <= 6; i++) {
+    const sel = document.getElementById('g2_' + i);
+    if (sel) total += parseInt(sel.value) || 0;
+  }
+  document.getElementById('saTotal').textContent = total + ' / 24';
+}
+
+function copyPrompt() {
+  const parts = ['[KONTEKS]', document.getElementById('p1_konteks').value,
+    '\n[PERINTAH]', document.getElementById('p1_perintah').value,
+    '\n[SPESIFIKASI]', document.getElementById('p1_spesifikasi').value,
+    '\n[BATASAN]', document.getElementById('p1_batasan').value];
+  navigator.clipboard.writeText(parts.join('\n')).then(() => {
+    const btn = event.target; btn.textContent = '✓ Disalin!';
+    setTimeout(() => btn.textContent = '📋 Salin Prompt', 2000);
+  });
+}
+
+function handleSketch(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('sketchImg').src = ev.target.result;
+    document.getElementById('sketchPreview').style.display = 'block';
+    document.getElementById('sketchZone').style.display = 'none';
+    try { localStorage.setItem('elKPD_sketch', ev.target.result); } catch(e){}
+  };
+  reader.readAsDataURL(file);
+}
+function clearSketch() {
+  document.getElementById('sketchPreview').style.display = 'none';
+  document.getElementById('sketchZone').style.display = 'flex';
+  document.getElementById('sketchFile').value = '';
+  try { localStorage.removeItem('elKPD_sketch'); } catch(e){}
+}
+
+function handlePoster(e) {
+  const file = e.target.files[0]; if (!file || file.type === 'application/pdf') return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('posterImg').src = ev.target.result;
+    document.getElementById('posterPreview').style.display = 'block';
+    document.getElementById('posterZone').style.display = 'none';
+    try { localStorage.setItem('elKPD_poster', ev.target.result); } catch(e){}
+  };
+  reader.readAsDataURL(file);
+}
+function clearPoster() {
+  document.getElementById('posterPreview').style.display = 'none';
+  document.getElementById('posterZone').style.display = 'flex';
+  document.getElementById('posterFile').value = '';
+  try { localStorage.removeItem('elKPD_poster'); } catch(e){}
+}
+
+function handleAI(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('aiImg').src = ev.target.result;
+    document.getElementById('aiPreview').style.display = 'block';
+    document.getElementById('aiZone').style.display = 'none';
+    try { localStorage.setItem('elKPD_ai', ev.target.result); } catch(e){}
+  };
+  reader.readAsDataURL(file);
+}
+function clearAI() {
+  document.getElementById('aiPreview').style.display = 'none';
+  document.getElementById('aiZone').style.display = 'flex';
+  document.getElementById('aiFile').value = '';
+  try { localStorage.removeItem('elKPD_ai'); } catch(e){}
+}
+
+function loadImages() {
+  ['sketch','poster','ai'].forEach(key => {
+    try {
+      const data = localStorage.getItem('elKPD_' + key);
+      if (!data) return;
+      if (key === 'sketch') {
+        document.getElementById('sketchImg').src = data;
+        document.getElementById('sketchPreview').style.display = 'block';
+        document.getElementById('sketchZone').style.display = 'none';
+      } else if (key === 'poster') {
+        document.getElementById('posterImg').src = data;
+        document.getElementById('posterPreview').style.display = 'block';
+        document.getElementById('posterZone').style.display = 'none';
+      } else if (key === 'ai') {
+        document.getElementById('aiImg').src = data;
+        document.getElementById('aiPreview').style.display = 'block';
+        document.getElementById('aiZone').style.display = 'none';
+      }
+    } catch(e){}
+  });
+}
+
+// Set today's date as default
+window.addEventListener('DOMContentLoaded', () => {
+  load();
+  loadImages();
+  const tdEl = document.getElementById('id_tanggal');
+  if (tdEl && !tdEl.value) {
+    const now = new Date();
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    tdEl.value = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  }
+});
+</script>
+</body>
+</html>
